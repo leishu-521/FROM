@@ -34,7 +34,9 @@ config.LOSS.WEIGHT_PRED = 10.0
 # DATASET related params
 config.DATASET = edict()
 config.DATASET.ROOT = pwd + 'datasets/CASIA-WebFace/'
-config.DATASET.LMDB_FILE = 'data/datasets/CASIA-112x96-LMDB.lmdb'
+# config.DATASET.LMDB_FILE = 'data/datasets/CASIA-112x96-LMDB.lmdb'
+config.DATASET.LMDB_FILE = 'data/datasets/faces_webface_112x112/CASIA-112x96-LMDB.lmdb'
+
 config.DATASET.TRAIN_DATASET = 'WebFace'
 config.DATASET.TEST_DATASET = 'LFW'
 config.DATASET.NUM_CLASS = 10572

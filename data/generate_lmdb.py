@@ -8,8 +8,11 @@ from tqdm import tqdm
 
 import pdb
 
-WebFace_LMDB = 'data/datasets/faces_webface_112x112/temp/train.lmdb'
+# WebFace_LMDB = 'data/datasets/faces_webface_112x112/temp/train.lmdb'
+WebFace_LMDB = 'data/datasets/faces_webface_112x112/CASIA-112x96-LMDB.lmdb'
+# WebFace_Images = 'data/datasets/faces_webface_112x112/images/'
 WebFace_Images = 'data/datasets/faces_webface_112x112/images/'
+# WebFace_List = 'data/datasets/faces_webface_112x112/images.txt'
 WebFace_List = 'data/datasets/faces_webface_112x112/images.txt'
 Occluders = 'data/datasets/occluder/'
 Occluders_List = 'data/datasets/occluder/occluder.txt'
