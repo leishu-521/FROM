@@ -15,3 +15,5 @@ python -u test.py --cfg experiments/CASIA-112x96-LMDB-Mask.yaml \
                                   #--megaface-flag 0 \
                                   #--gpus '1,2,3' \
                                   #-j 1
+
+###

@@ -384,4 +384,4 @@ def LResNet50E_IR_Occ(is_gray=False, num_mask=101):
     filter_list = [64, 64, 128, 256, 512, num_mask]
     layers = [3, 4, 14, 3]
     model = LResNet_Occ(BlockIR, layers, filter_list, is_gray)
-    return model 
+    return model

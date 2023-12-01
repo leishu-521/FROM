@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="leishu@192.168.1.100:22 key" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="yls4509@192.168.1.101:22 key" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="leishu@192.168.1.100:22 key">
         <serverdata>
@@ -13,6 +13,13 @@
         <serverdata>
           <mappings>
             <mapping deploy="/tmp/pycharm_project_727" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="yls4509@192.168.1.101:22 key">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/yls4509/pycode/FROM" local="$PROJECT_DIR$" />
           </mappings>
         </serverdata>
       </paths>
