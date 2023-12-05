@@ -37,26 +37,28 @@ np.random.seed(0)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Pytorch OccFace')
-    parser.add_argument('--cfg', help='experiment configure file name', required=True, type=str)
+    # parser.add_argument('--cfg', help='experiment configure file name', required=True, type=str, default="experiments/CASIA-112x96-LMDB-Mask.yaml")
+    parser.add_argument('--cfg', help='experiment configure file name', type=str,
+                        default="experiments/CASIA-112x96-LMDB-Mask.yaml")
     args, rest = parser.parse_known_args()
     update_config(args.cfg)
 
     parser.add_argument('--frequent', help='frequency of logging', default=config.TRAIN.PRINT_FREQ, type=int)
-    parser.add_argument('--gpus', help='gpus', type=str)
+    parser.add_argument('--gpus', help='gpus', type=str, default='0')
     parser.add_argument('--workers', help='num of dataloader workers', type=int)
     parser.add_argument('--binary_thres', help='thres for binary mask', type=float)
     parser.add_argument('--soft_binary', help='whether use soft binary mask', type=int)
-    parser.add_argument('--batch_size', help='batch size', type=int)
-    parser.add_argument('--weight_pred', help='wegiht for pred loss', type=float)
-    parser.add_argument('--pattern', help='num of pattern', type=int)
-    parser.add_argument('--lr', help='init learning rate', type=float)
-    parser.add_argument('--optim', help='optimizer type', type=str)
+    parser.add_argument('--batch_size', help='batch size', type=int, default=8)
+    parser.add_argument('--weight_pred', help='wegiht for pred loss', type=float, default=1)
+    parser.add_argument('--pattern', help='num of pattern', type=int, default=5)
+    parser.add_argument('--lr', help='init learning rate', type=float, default=0.01)
+    parser.add_argument('--optim', help='optimizer type', type=str, default='sgd')
     parser.add_argument('--pretrained', help='whether use pretrained model', type=str)
     parser.add_argument('--debug', help='whether debug', default=0, type=int)
-    parser.add_argument('--model', help=' model name', type=str)
+    parser.add_argument('--model', help=' model name', type=str, default='LResNet50E_IR_FPN')
     parser.add_argument('--loss', help=' loss type', type=str)
     parser.add_argument('--factor', help='factor of mask',  type=float)
-    parser.add_argument('--ratio', help='ratio of masked img for training', default=4, type=int)
+    parser.add_argument('--ratio', help='ratio of masked img for training', default=3, type=int)
     args = parser.parse_args()
 
     return args
@@ -104,9 +106,27 @@ def reset_config(config, args):
         print('update wegiht_pred')
         config.LOSS.WEIGHT_PRED = args.weight_pred
 
+
+class ArgsNamespace():
+    def __init__(self, cfg, model, batch_size, gpus, lr, weight_pred, optim, ratio, pattern, debug):
+        self.cfg = cfg
+        self.model = model
+        self.batch_size = batch_size
+        self.gpus = gpus
+        self.lr = lr
+        self.weight_pred = weight_pred
+        self.optim = optim
+        self.ratio = ratio
+        self.pattern = pattern
+        self.debug = debug
+        # 设置其他参数
+        # self.other_args = other_args
 def main():
     # --------------------------------------model----------------------------------------
     args = parse_args()
+    # args = ArgsNamespace("experiments/CASIA-112x96-LMDB-Mask.yaml", 'LResNet50E_IR_FPN', 8, 0,0.01, 1, "sgd", 3, 5, 0)
+
+
     reset_config(config, args)
     os.environ['CUDA_VISIBLE_DEVICES'] = config.TRAIN.GPUS
 
