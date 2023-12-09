@@ -116,13 +116,13 @@ class LResNet_Occ(nn.Module):
             mask = self.triplet(fmap)
 
         # regress
-        vec = self.regress(mask.view(mask.size(0), -1))
+        vec = self.regress(mask.reshape(mask.size(0), -1))
 
         fmap_mask = fmap * mask
 
-        fc_mask = self.fc(fmap_mask.view(fmap_mask.size(0), -1))
+        fc_mask = self.fc(fmap_mask.reshape(fmap_mask.size(0), -1))
 
-        fc = self.fc(fmap.view(fmap.size(0), -1))
+        fc = self.fc(fmap.reshape(fmap.size(0), -1))
 
         return fc_mask, mask, vec, fc 
 
@@ -191,7 +191,7 @@ class LResNet(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
 
-        x = x.view(x.size(0), -1)
+        x = x.reshape(x.size(0), -1)
         x = self.fc(x)
 
         return x
@@ -290,9 +290,9 @@ class LResNet_Occ_Song(nn.Module):
 
         fmap_mask = fmap * mask
 
-        fc_mask = self.fc(fmap_mask.view(fmap_mask.size(0), -1))
+        fc_mask = self.fc(fmap_mask.reshape(fmap_mask.size(0), -1))
 
-        fc = self.fc(fmap.view(fmap.size(0), -1))
+        fc = self.fc(fmap.reshape(fmap.size(0), -1))
 
         return fc_mask, mask, vec, fc 
 

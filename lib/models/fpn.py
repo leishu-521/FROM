@@ -167,12 +167,12 @@ class LResNet_Occ_FC(nn.Module):
         if not isinstance(mask, torch.Tensor):
             features = self.fpn([x2, x3, fmap])
             fmap_reduce = self.reduces(features[0])
-            mask = self.mask(fmap_reduce.view(fmap_reduce.size(0), -1))
+            mask = self.mask(fmap_reduce.reshape(fmap_reduce.size(0), -1))
 
         # regress
         vec = self.regress(mask)
 
-        fc = self.fc(fmap.view(fmap.size(0), -1))
+        fc = self.fc(fmap.reshape(fmap.size(0), -1))
 
         fc_mask = fc * mask
 
@@ -253,6 +253,8 @@ class LResNet_Occ_2D(nn.Module):
 
         return nn.Sequential(*layers)
 
+
+
     def forward(self, x, mask=None):
         x = self.conv1(x)
         x = self.bn1(x)
@@ -269,13 +271,14 @@ class LResNet_Occ_2D(nn.Module):
             mask = mask.repeat(1, self.filter_list[4], 1, 1)
 
         # regress
-        vec = self.regress(mask.view(mask.size(0), -1))
+        vec = self.regress(mask.reshape(mask.size(0), -1))
+
 
         fmap_mask = fmap * mask
 
-        fc_mask = self.fc(fmap_mask.view(fmap_mask.size(0), -1))
+        fc_mask = self.fc(fmap_mask.reshape(fmap_mask.size(0), -1))
 
-        fc = self.fc(fmap.view(fmap.size(0), -1))
+        fc = self.fc(fmap.reshape(fmap.size(0), -1))
 
         return fc_mask, mask, vec, fc 
 
@@ -318,6 +321,7 @@ class LResNet_Occ(nn.Module):
             nn.Sigmoid(),
         ) 
         self.fpn = PyramidFeatures(filter_list[2], filter_list[3], filter_list[4])
+        self.attention = CustomAttention(512)
 
         self.regress = nn.Sequential(
             nn.BatchNorm1d(filter_list[4]*7*6),
@@ -360,20 +364,29 @@ class LResNet_Occ(nn.Module):
         x2 = self.layer2(x1)
         x3 = self.layer3(x2)
         fmap = self.layer4(x3)
+        # print("fmap:".format(fmap.shape))
 
         # generate mask
         if not isinstance(mask, torch.Tensor):
             features = self.fpn([x2, x3, fmap])
             mask = self.mask(features[0])
+        # print("mask:".format(mask.shape))
 
         # regress
-        vec = self.regress(mask.view(mask.size(0), -1))
+        vec = self.regress(mask.reshape(mask.size(0), -1))
 
-        fmap_mask = fmap * mask
+        ## 下面是自定义的transformer注意力机制
+        # flatten: [B, C, H, W] -> [B, C, HW]
+        # transpose: [B, C, HW] -> [B, HW, C]
+        fmap = fmap.flatten(2).transpose(1, 2)
+        mask = mask.flatten(2).transpose(1, 2)
+        fmap_mask = self.attention(fmap, mask, fmap)
 
-        fc_mask = self.fc(fmap_mask.view(fmap_mask.size(0), -1))
+        # fmap_mask = fmap * mask   #舍弃原来的哈达玛积的注意力机制的方式
 
-        fc = self.fc(fmap.view(fmap.size(0), -1))
+        fc_mask = self.fc(fmap_mask.reshape(fmap_mask.size(0), -1))
+
+        fc = self.fc(fmap.reshape(fmap.size(0), -1))
 
         return fc_mask, mask, vec, fc 
 
@@ -387,3 +400,55 @@ def LResNet50E_IR_Occ(is_gray=False, num_mask=101):
     layers = [3, 4, 14, 3]
     model = LResNet_Occ(BlockIR, layers, filter_list, is_gray)
     return model
+
+
+
+class CustomAttention(nn.Module):
+    def __init__(self,
+                 dim,  # 输入token的dim
+                 num_heads=8,
+                 qkv_bias=False,
+                 qk_scale=None,
+                 attn_drop_ratio=0.,
+                 proj_drop_ratio=0.):
+        super(CustomAttention, self).__init__()
+        self.num_heads = num_heads
+        head_dim = dim // num_heads
+        self.scale = qk_scale or head_dim ** -0.5
+        self.qkv = nn.Linear(dim * 3, dim * 3, bias=qkv_bias)
+        self.attn_drop = nn.Dropout(attn_drop_ratio)
+        self.proj = nn.Linear(dim, dim)
+        self.proj_drop = nn.Dropout(proj_drop_ratio)
+
+    def forward(self, q, k, v):
+        # qkv(): -> [batch_size, num_patches + 1, 3 * total_embed_dim]
+        # reshape: -> [batch_size, num_patches + 1, 3, num_heads, embed_dim_per_head]
+        # permute: -> [3, batch_size, num_heads, num_patches + 1, embed_dim_per_head]
+        B, N, C = q.shape
+
+        qkv = self.qkv(torch.cat([q, k, v], dim=-1))\
+            .reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+
+        # [batch_size, num_heads, num_patches + 1, embed_dim_per_head]
+        q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
+
+        # transpose: -> [batch_size, num_heads, embed_dim_per_head, num_patches + 1]
+        # @: multiply -> [batch_size, num_heads, num_patches + 1, num_patches + 1]
+        attn = (q @ k.transpose(-2, -1)) * self.scale
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+
+        # @: multiply -> [batch_size, num_heads, num_patches + 1, embed_dim_per_head]
+        # transpose: -> [batch_size, num_patches + 1, num_heads, embed_dim_per_head]
+        # reshape: -> [batch_size, num_patches + 1, total_embed_dim]
+        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        x = self.proj(x)
+        x = self.proj_drop(x)
+        return x
+
+
+if __name__ == "__main__":
+    model = LResNet50E_IR_Occ()
+    a = torch.randn([8, 3, 112, 96])
+    b = model(a)
+    print(b)
