@@ -107,26 +107,10 @@ def reset_config(config, args):
         config.LOSS.WEIGHT_PRED = args.weight_pred
 
 
-class ArgsNamespace():
-    def __init__(self, cfg, model, batch_size, gpus, lr, weight_pred, optim, ratio, pattern, debug):
-        self.cfg = cfg
-        self.model = model
-        self.batch_size = batch_size
-        self.gpus = gpus
-        self.lr = lr
-        self.weight_pred = weight_pred
-        self.optim = optim
-        self.ratio = ratio
-        self.pattern = pattern
-        self.debug = debug
-        # 设置其他参数
-        # self.other_args = other_args
+
 def main():
     # --------------------------------------model----------------------------------------
     args = parse_args()
-    # args = ArgsNamespace("experiments/CASIA-112x96-LMDB-Mask.yaml", 'LResNet50E_IR_FPN', 8, 0,0.01, 1, "sgd", 3, 5, 0)
-
-
     reset_config(config, args)
     os.environ['CUDA_VISIBLE_DEVICES'] = config.TRAIN.GPUS
 
@@ -136,7 +120,7 @@ def main():
         logger, final_output_dir, tb_log_dir = utils.create_logger(
             config, args.cfg, 'train')
 
-
+    # 下面是一个集合+key取值的过程，集合[key]==value
     model = {
         'LResNet50E_IR_FPN': LResNet50E_IR_FPN(num_mask=config.TRAIN.NUM_MASK),
         'LResNet50E_IR_Occ_2D': LResNet50E_IR_Occ_2D(num_mask=config.TRAIN.NUM_MASK),

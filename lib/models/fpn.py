@@ -101,7 +101,8 @@ class LResNet_Occ_FC(nn.Module):
         self.layer2 = self._make_layer(block, filter_list[1], filter_list[2], layers[1], stride=2)
         self.layer3 = self._make_layer(block, filter_list[2], filter_list[3], layers[2], stride=2)
         self.layer4 = self._make_layer(block, filter_list[3], filter_list[4], layers[3], stride=2)
-        # --Begin--Triplet branch 
+        # --Begin--Triplet branch
+        # 把掩码作为向量的形式
         self.mask = nn.Sequential(
             nn.BatchNorm1d(64 * 7 * 6),
             nn.Linear(64 * 7 * 6, 512),
@@ -119,6 +120,7 @@ class LResNet_Occ_FC(nn.Module):
             nn.BatchNorm2d(64)
         )
 
+        # 此处是OPP预测结构
         self.regress = nn.Sequential(
             nn.BatchNorm1d(512),
             nn.Dropout(p=0.5),  # No drop for triplet dic
