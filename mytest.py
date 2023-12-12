@@ -1,7 +1,7 @@
-# # import netron
-# #
-# # modelData = "./pretrained/model_p4_baseline_9938_8205_3610.pth.tar"
-# # netron.start(modelData)
+# import netron
+#
+# modelData = "./pretrained/model_p4_baseline_9938_8205_3610.pth.tar"
+# netron.start(modelData)
 #
 # import torch
 # import torchvision.models as models

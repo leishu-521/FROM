@@ -81,7 +81,7 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, tb_log_d
             time_curr = time.time()
             loss_display = 0.0
             loss_cls_dis = 0.0
-            loss_pred_dis = 0.0 
+            loss_pred_dis = 0.0
 
 def occ_train(features, label, mask_label, config, classifier, criterion):
     fc_mask, mask, vec, fc = features

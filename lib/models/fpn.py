@@ -378,9 +378,9 @@ class LResNet_Occ(nn.Module):
         ## 下面是自定义的transformer注意力机制
         # flatten: [B, C, H, W] -> [B, C, HW]
         # transpose: [B, C, HW] -> [B, HW, C]
-        fmap = fmap.flatten(2).transpose(1, 2)
-        mask = mask.flatten(2).transpose(1, 2)
-        fmap_mask = self.attention(fmap, mask, fmap)
+        fmap_patch = fmap.flatten(2).transpose(1, 2)
+        mask_patch = mask.flatten(2).transpose(1, 2)
+        fmap_mask = self.attention(fmap_patch, mask_patch, fmap_patch)
 
         # fmap_mask = fmap * mask   #舍弃原来的哈达玛积的注意力机制的方式
 
@@ -426,8 +426,7 @@ class CustomAttention(nn.Module):
         # permute: -> [3, batch_size, num_heads, num_patches + 1, embed_dim_per_head]
         B, N, C = q.shape
 
-        qkv = self.qkv(torch.cat([q, k, v], dim=-1))\
-            .reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+        qkv = self.qkv(torch.cat([q, k, v], dim=-1)).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
 
         # [batch_size, num_heads, num_patches + 1, embed_dim_per_head]
         q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
