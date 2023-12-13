@@ -1,6 +1,10 @@
 python -u train.py --cfg experiments/CASIA-112x96-LMDB-Mask.yaml \
                     --model 'LResNet50E_IR_FPN'\
+<<<<<<< HEAD
                     --batch_size 8 \
+=======
+                    --batch_size 64 \
+>>>>>>> ba894d0 (这是在2080上调整可以直接跑的代码)
                     --gpus '0' \
                     --lr 0.01 \
                     --weight_pred 1  \

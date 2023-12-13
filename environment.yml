@@ -1,4 +1,4 @@
-name: pytorch1.8
+name: pytorch8
 channels:
   - pytorch
   - https://repo.anaconda.com/pkgs/main
