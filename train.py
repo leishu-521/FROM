@@ -48,7 +48,7 @@ def parse_args():
     parser.add_argument('--workers', help='num of dataloader workers', type=int)
     parser.add_argument('--binary_thres', help='thres for binary mask', type=float)
     parser.add_argument('--soft_binary', help='whether use soft binary mask', type=int)
-    parser.add_argument('--batch_size', help='batch size', type=int, default=8)
+    parser.add_argument('--batch_size', help='batch size', type=int, default=64)
     parser.add_argument('--weight_pred', help='wegiht for pred loss', type=float, default=1)
     parser.add_argument('--pattern', help='num of pattern', type=int, default=5)
     parser.add_argument('--lr', help='init learning rate', type=float, default=0.01)

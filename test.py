@@ -38,21 +38,21 @@ np.random.seed(0)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Pytorch End2End Occluded Face')
-    parser.add_argument('--cfg', help='experiment configure file name', required=True, type=str)
+    parser.add_argument('--cfg', help='experiment configure file name', type=str, default="experiments/CASIA-112x96-LMDB-Mask.yaml")
     args, rest = parser.parse_known_args()
     update_config(args.cfg)
 
-    parser.add_argument('--gpus', help='gpus', type=str)
+    parser.add_argument('--gpus', help='gpus', type=str, default='0')
     parser.add_argument('--workers', help='num of dataloader workers', type=int)
     parser.add_argument('--binary_thres', help='thres for binary mask', type=float)
     parser.add_argument('--soft_binary', help='whether use soft binary mask', type=int)
-    parser.add_argument('--batch_size', help='batch size', type=int)
-    parser.add_argument('--pattern', help='num of pattern', type=int)
+    parser.add_argument('--batch_size', help='batch size', type=int, default=128)
+    parser.add_argument('--pattern', help='num of pattern', type=int, default=5)
     parser.add_argument('--pretrained', help='whether use pretrained model', type=str)
-    parser.add_argument('--debug', help='whether debug', default=0, type=int)
-    parser.add_argument('--model', help=' model name', type=str)
+    parser.add_argument('--debug', help='whether debug', default=1, type=int)
+    parser.add_argument('--model', help=' model name', type=str, default='LResNet50E_IR_FPN')
     parser.add_argument('--factor', help='factor of mask',  type=float)
-    parser.add_argument('--ratio', help='ratio of masked img for training', default=4, type=int)
+    parser.add_argument('--ratio', help='ratio of masked img for training', default=3, type=int)
     args = parser.parse_args()
 
     return args
@@ -114,6 +114,9 @@ def main():
     model_root = 'pretrained/'
     model_list = ['model_p5_w1_9938_9470_6503.pth.tar',
                   'model_p4_baseline_9938_8205_3610.pth.tar']
+    # model_root = 'pretrained/'
+    # model_list = ['model_best_2023-12-14-14-37_0.9915_0.9588_0.7163.pth.tar',
+    #               'checkpoint.pth.tar']
     # model_list = [
         # 'model_best_p5_w0.pth.tar',
         # 'model_best_p5_w1.pth.tar',
