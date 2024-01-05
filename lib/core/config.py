@@ -89,7 +89,8 @@ config.TRAIN.GAMMA1 = 0.99
 config.TRAIN.GAMMA2 = 0.0
 
 config.TRAIN.START_EPOCH = 0
-config.TRAIN.END_EPOCH = 40
+# config.TRAIN.END_EPOCH = 40
+config.TRAIN.END_EPOCH = 60
 config.TRAIN.RESUME = ''
 config.TRAIN.RESUME_FC = ''
 config.TRAIN.BATCH_SIZE = 256

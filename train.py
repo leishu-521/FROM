@@ -126,6 +126,7 @@ def main():
         'LResNet50E_IR_Occ_2D': LResNet50E_IR_Occ_2D(num_mask=config.TRAIN.NUM_MASK),
         'LResNet50E_IR_Occ_FC': LResNet50E_IR_Occ_FC(num_mask=config.TRAIN.NUM_MASK),
     }[config.TRAIN.MODEL]
+    print(model)
 
     # choose the type of loss 512 is dimension of feature
     classifier = {
@@ -152,11 +153,12 @@ def main():
 
     start_epoch = config.TRAIN.START_EPOCH
     if config.NETWORK.PRETRAINED:
-        model, classifier = utils.load_pretrained(model, classifier, final_output_dir)
+        # print(final_output_dir)
+        model, classifier = utils.load_pretrained(model, classifier, final_output_dir, "model_p5_w1_9938_9470_6503_原来.pth.tar")
 
     if config.TRAIN.RESUME:
         start_epoch, model, optimizer, classifier = \
-            utils.load_checkpoint(model, optimizer, classifier, final_output_dir)
+            utils.load_checkpoint(model, optimizer, classifier, final_output_dir, "model_p5_w1_9938_9470_6503_原来.pth.tar")
 
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, config.TRAIN.LR_STEP, config.TRAIN.LR_FACTOR)

@@ -311,15 +311,27 @@ class LResNet_Occ(nn.Module):
         self.layer3 = self._make_layer(block, filter_list[2], filter_list[3], layers[2], stride=2)
         self.layer4 = self._make_layer(block, filter_list[3], filter_list[4], layers[3], stride=2)
         # --Begin--Triplet branch 
+        # self.mask = nn.Sequential(
+        #     nn.Conv2d(256, 256, kernel_size=3, stride=2, padding=1, bias=False),
+        #     nn.PReLU(256),
+        #     nn.BatchNorm2d(256),
+        #     nn.Conv2d(256, filter_list[4], kernel_size=3, stride=2, padding=1, bias=False),
+        #     # nn.PReLU(filter_list[4]),
+        #     # nn.BatchNorm2d(filter_list[4]),
+        #     nn.Sigmoid(),
+        # )
+        # 下面是自研模块
         self.mask = nn.Sequential(
             nn.Conv2d(256, 256, kernel_size=3, stride=2, padding=1, bias=False),
             nn.PReLU(256),
             nn.BatchNorm2d(256),
             nn.Conv2d(256, filter_list[4], kernel_size=3, stride=2, padding=1, bias=False),
+            MaskDecoder(filter_list[4], 2),
             # nn.PReLU(filter_list[4]),
             # nn.BatchNorm2d(filter_list[4]),
             nn.Sigmoid(),
-        ) 
+        )
+
         self.fpn = PyramidFeatures(filter_list[2], filter_list[3], filter_list[4])
         self.attention = CustomAttention(512)
 
@@ -329,6 +341,9 @@ class LResNet_Occ(nn.Module):
             nn.Linear(filter_list[4]*7*6, filter_list[5], bias=False),
             nn.BatchNorm1d(filter_list[5]),
         )
+        # self.regress1 = Regress(filter_list[4], filter_list[5])
+
+
         # --End--Triplet branch
         self.fc = nn.Sequential(
             nn.BatchNorm1d(filter_list[4] * 7 * 6),
@@ -374,6 +389,9 @@ class LResNet_Occ(nn.Module):
 
         # regress
         vec = self.regress(mask.reshape(mask.size(0), -1))
+
+        # leishu regress1
+        # vec = self.regress1(mask)
 
         ## 下面是自定义的transformer注意力机制
         # flatten: [B, C, H, W] -> [B, C, HW]
@@ -446,8 +464,48 @@ class CustomAttention(nn.Module):
         return x
 
 
+class Regress(nn.Module):
+    def __init__(self, input_channels, num_mask):
+        super().__init__()
+        self.input_channels = input_channels
+        self.num_mask = num_mask
+        self.softmax_a = nn.Softmax(dim=1)
+        self.conv1x1 = nn.Conv2d(self.input_channels, 2, 1, 1, 0)
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Linear(self.input_channels, self.num_mask)
+
+    def forward(self, x):
+        out = self.conv1x1(x)
+        out = self.softmax_a(out)
+        out, _ = torch.max(out, dim=1, keepdim=True)
+        x1 = x * out.repeat(1, 512, 1, 1)
+        # 全局平均池化
+        x1 = self.avg_pool(x1)
+        if x1.shape[0] != 1:
+            x1 = x1.squeeze()
+        else:
+            x1 = x1.squeeze(2).squeeze(2)
+        x1 = self.fc(x1)
+        return x1
+
+class MaskDecoder(nn.Module):
+    def __init__(self, input_channels, out_channels):
+        super().__init__()
+        self.input_channels = input_channels
+        self.out_channels = out_channels
+        self.softmax_a = nn.Softmax(dim=1)
+        self.conv1x1 = nn.Conv2d(self.input_channels, out_channels, 1, 1, 0)
+
+
+    def forward(self, x):
+        out = self.conv1x1(x)
+        out = self.softmax_a(out)
+        out, _ = torch.max(out, dim=1, keepdim=True)
+        x1 = x * out.repeat(1, self.input_channels, 1, 1)
+        return x1
+
 if __name__ == "__main__":
     model = LResNet50E_IR_Occ()
     a = torch.randn([8, 3, 112, 96])
     b = model(a)
-    print(b)
+    print(b[2].shape)
