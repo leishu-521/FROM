@@ -77,7 +77,7 @@ config.TRAIN.GPUS = '0'
 config.TRAIN.WORKERS = 8
 config.TRAIN.PRINT_FREQ = 100
 config.TRAIN.LR_FACTOR = 0.1
-config.TRAIN.LR_STEP = [15, 30]
+config.TRAIN.LR_STEP = [15, 30, 45]
 config.TRAIN.LR = 0.1
 config.TRAIN.LR_FREEZE = 0.1
 

@@ -35,6 +35,7 @@ from lib.models.metrics import SphereMarginProduct
 torch.manual_seed(0)
 np.random.seed(0)
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Pytorch OccFace')
     # parser.add_argument('--cfg', help='experiment configure file name', required=True, type=str, default="experiments/CASIA-112x96-LMDB-Mask.yaml")
@@ -57,11 +58,12 @@ def parse_args():
     parser.add_argument('--debug', help='whether debug', default=0, type=int)
     parser.add_argument('--model', help=' model name', type=str, default='LResNet50E_IR_FPN')
     parser.add_argument('--loss', help=' loss type', type=str)
-    parser.add_argument('--factor', help='factor of mask',  type=float)
+    parser.add_argument('--factor', help='factor of mask', type=float)
     parser.add_argument('--ratio', help='ratio of masked img for training', default=3, type=int)
     args = parser.parse_args()
 
     return args
+
 
 def reset_config(config, args):
     if args.gpus:
@@ -85,10 +87,10 @@ def reset_config(config, args):
     if args.lr:
         print('update learning rate')
         config.TRAIN.LR = args.lr
-    if args.pretrained =='No':
+    if args.pretrained == 'No':
         print('update pretrained')
         config.NETWORK.PRETRAINED = ''
-    if args.factor: 
+    if args.factor:
         print('update factor')
         config.NETWORK.FACTOR = args.factor
     if args.optim:
@@ -105,7 +107,6 @@ def reset_config(config, args):
     if args.weight_pred is not None:
         print('update wegiht_pred')
         config.LOSS.WEIGHT_PRED = args.weight_pred
-
 
 
 def main():
@@ -137,11 +138,11 @@ def main():
 
     # --------------------------------loss function and optimizer-----------------------------
     optimizer_sgd = torch.optim.SGD([{'params': model.parameters()}, {'params': classifier.parameters()}],
-                                lr=config.TRAIN.LR,
-                                momentum=config.TRAIN.MOMENTUM,
-                                weight_decay=config.TRAIN.WD)
+                                    lr=config.TRAIN.LR,
+                                    momentum=config.TRAIN.MOMENTUM,
+                                    weight_decay=config.TRAIN.WD)
     optimizer_adam = torch.optim.Adam([{'params': model.parameters()}, {'params': classifier.parameters()}],
-                                lr=config.TRAIN.LR)
+                                      lr=config.TRAIN.LR)
     if config.TRAIN.OPTIMIZER == 'sgd':
         optimizer = optimizer_sgd
     elif config.TRAIN.OPTIMIZER == 'adam':
@@ -154,11 +155,13 @@ def main():
     start_epoch = config.TRAIN.START_EPOCH
     if config.NETWORK.PRETRAINED:
         # print(final_output_dir)
-        model, classifier = utils.load_pretrained(model, classifier, final_output_dir, "model_p5_w1_9938_9470_6503_原来.pth.tar")
+        model, classifier = utils.load_pretrained(model, classifier, final_output_dir,
+                                                  "model_p5_w1_9938_9470_6503_原来.pth.tar")
 
     if config.TRAIN.RESUME:
         start_epoch, model, optimizer, classifier = \
-            utils.load_checkpoint(model, optimizer, classifier, final_output_dir, "model_p5_w1_9938_9470_6503_原来.pth.tar")
+            utils.load_checkpoint(model, optimizer, classifier, final_output_dir,
+                                  "model_p5_w1_9938_9470_6503_原来.pth.tar")
 
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, config.TRAIN.LR_STEP, config.TRAIN.LR_FACTOR)
@@ -196,22 +199,22 @@ def main():
         transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))  # range [0.0, 1.0] -> [-1.0,1.0]
     ])
 
-    dataset = WebFace_LMDB(config.DATASET.LMDB_FILE, config.TRAIN.MODE, 
-                           config.NETWORK.IMAGE_SIZE, config.TRAIN.PATTERN, 
+    dataset = WebFace_LMDB(config.DATASET.LMDB_FILE, config.TRAIN.MODE,
+                           config.NETWORK.IMAGE_SIZE, config.TRAIN.PATTERN,
                            ratio=args.ratio, transform=train_transform)
 
     train_loader = torch.utils.data.DataLoader(
         dataset=dataset,
-        batch_size=config.TRAIN.BATCH_SIZE*len(gpus), 
+        batch_size=config.TRAIN.BATCH_SIZE * len(gpus),
         shuffle=config.TRAIN.SHUFFLE,
-        num_workers=config.TRAIN.WORKERS, 
+        num_workers=config.TRAIN.WORKERS,
         pin_memory=True)
 
     test_loader = torch.utils.data.DataLoader(
         LFW_Image(config, test_transform),
-        batch_size=config.TEST.BATCH_SIZE*len(gpus), 
+        batch_size=config.TEST.BATCH_SIZE * len(gpus),
         shuffle=config.TEST.SHUFFLE,
-        num_workers=config.TEST.WORKERS, 
+        num_workers=config.TEST.WORKERS,
         pin_memory=True)
 
     logger.info('length of train Database: ' + str(len(train_loader.dataset)) + '  Batches: ' + str(len(train_loader)))
@@ -248,14 +251,25 @@ def main():
             'classifier': classifier.module.state_dict(),
         }, best_model, final_output_dir)
 
-    # save best model with its acc
-    time_str = time.strftime('%Y-%m-%d-%H-%M')
-    shutil.move(os.path.join(final_output_dir, 'model_best.pth.tar'), 
-                os.path.join(final_output_dir, 'model_best_{}_{:.4f}_{:.4f}_{:.4f}.pth.tar'.format(time_str, best_keep[0], best_keep[1], best_keep[2])))
+        # # save best model with its acc
+        # time_str = time.strftime('%Y-%m-%d-%H-%M')
+        # shutil.move(os.path.join(final_output_dir, 'model_best.pth.tar'),
+        #             os.path.join(final_output_dir, 'model_best_{}_{:.4f}_{:.4f}_{:.4f}.pth.tar'.format(time_str, best_keep[0], best_keep[1], best_keep[2])))
+        # 40和50和60轮时分别保存一下
+        if epoch == 40 or epoch == 50 or epoch == 60:
+            # save best model with its acc
+            time_str = time.strftime('%Y-%m-%d-%H-%M')
+            shutil.copyfile(os.path.join(final_output_dir, 'model_best.pth.tar'),
+                            os.path.join(final_output_dir,
+                                         'model_best_{}epoch_{}_{:.4f}_{:.4f}_{:.4f}.pth.tar'.format(epoch, time_str,
+                                                                                                     best_keep[0],
+                                                                                                     best_keep[1],
+                                                                                                     best_keep[2])))
 
     end = time.time()
     time_used = (end - start) / 3600.0
     logger.info('Done Training, Consumed {:.2f} hours'.format(time_used))
+
 
 if __name__ == '__main__':
     main()

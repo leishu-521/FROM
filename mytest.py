@@ -1,21 +1,25 @@
 import netron
-
-# modelData = "./pretrained/model_p4_baseline_9938_8205_3610.pth.tar"
-modelData = '/home/leishu/pycode/FROM/output/WebFace/LResNet50E_IR_FPN_CosMargin-Mask/CASIA-112x96-LMDB-Mask-pattern_5-weight_1-lr_0.01-optim_sgd-pretrained_1_factor_1/model_best_p5_2023-12-28-16-35_0.9905_0.9405_0.5527_作者给的预训练权重_改动MD模块.pth.tar'
-netron.start(modelData)
-
-import torch
-import torchvision.models as models
-
-checkpoint = \
-    torch.load("./pretrained/model_p4_baseline_9938_8205_3610.pth.tar") # 加载模型
-print(checkpoint.keys()) # 查看模型元素
-state_dict = checkpoint['state_dict']
 #
-# # print(checkpoint['epoch'])
-# # print(checkpoint['arch'])
-# # print(checkpoint['best_prec1'])
-# print(checkpoint)
+# # modelData = "./pretrained/model_p4_baseline_9938_8205_3610.pth.tar"
+modelData = '/home/leishu/pycode/FROM/output/WebFace/LResNet50E_IR_FPN_CosMargin-Mask/CASIA-112x96-LMDB-Mask-pattern_5-weight_1-lr_0.01-optim_sgd-pretrained_1_factor_1/'
+
+# modelData = '/home/leishu/pycode/FROM/output/WebFace/LResNet50E_IR_FPN_CosMargin-Mask/CASIA-112x96-LMDB-Mask-pattern_5-weight_1-lr_0.01-optim_sgd-pretrained_1_factor_1/model_best_p5_2023-12-28-16-35_0.9905_0.9405_0.5527_作者给的预训练权重_改动MD模块.pth.tar'
+netron.start(modelData+"model_best_p5_2023-12-14-14-37_0.9915_0.9588_0.7163.pth.tar")
+
+# import torch
+# import torchvision.models as models
+#
+# # checkpoint = \
+# #     torch.load("./pretrained/model_p4_baseline_9938_8205_3610.pth.tar") # 加载模型
+# model_root = '/home/leishu/pycode/FROM/output/WebFace/LResNet50E_IR_FPN_CosMargin-Mask/CASIA-112x96-LMDB-Mask-pattern_5-weight_1-lr_0.01-optim_sgd-pretrained_1_factor_1/'
+# checkpoint = torch.load(model_root + "model_best_p5_2023-12-14-14-37_0.9915_0.9588_0.7163.pth.tar")
+# print(checkpoint.keys()) # 查看模型元素
+# state_dict = checkpoint['state_dict']
+# #
+# # # print(checkpoint['epoch'])
+# # # print(checkpoint['arch'])
+# # # print(checkpoint['best_prec1'])
+# print(state_dict)
 #
 #
 #

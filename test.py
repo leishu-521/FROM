@@ -113,10 +113,15 @@ def main():
 
     # model_root = 'pretrained/'
     model_root ='/home/leishu/pycode/FROM/output/WebFace/LResNet50E_IR_FPN_CosMargin-Mask/CASIA-112x96-LMDB-Mask-pattern_5-weight_1-lr_0.01-optim_sgd-pretrained_1_factor_1'
-    model_list = ['model_best_p5_2023-12-21-03-36_0.9915_0.9480_0.5587_作者给的预训练权重_改动opp模块.pth.tar',
-                  'model_best_p5_2023-12-28-16-35_0.9905_0.9405_0.5527_作者给的预训练权重_改动MD模块.pth.tar',
+    # model_list = ['model_best_p5_2023-12-21-03-36_0.9915_0.9480_0.5587_作者给的预训练权重_改动opp模块.pth.tar',
+    #               'model_best_p5_2023-12-28-16-35_0.9905_0.9405_0.5527_作者给的预训练权重_改动MD模块.pth.tar',
+    #               'model_best_p5_2023-12-22-15-20_0.9878_0.9312_0.6440_作者给的预训练权重_transformer模块.pth.tar',
+    #               'model_best_p5_2023-12-14-14-37_0.9915_0.9588_0.7163.pth.tar']
+    model_list = ['model_best_p5_40epoch_2024-01-08-20-59_0.9887_0.9278_0.4933.pth.tar',
+                  'model_best_p5_50epoch_2024-01-09-03-47_0.9887_0.9278_0.4933.pth.tar',
                   'model_best_p5_2023-12-22-15-20_0.9878_0.9312_0.6440_作者给的预训练权重_transformer模块.pth.tar',
-                  'model_best_p5_2023-12-14-14-37_0.9915_0.9588_0.7163.pth.tar']
+                  'model_best_p5_2023-12-14-14-37_0.9915_0.9588_0.7163.pth.tar',
+                  'model_best_p5.pth.tar']
     # model_root = 'pretrained/'
     # model_list = ['model_best_2023-12-14-14-37_0.9915_0.9588_0.7163.pth.tar',
     #               'checkpoint.pth.tar']
