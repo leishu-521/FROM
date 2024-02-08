@@ -214,7 +214,7 @@ def test(rank, args, world_size):
         megaface_out = os.path.join(args.output, 'megaface')
         mp_print('process[{}]: {}'.format(rank, model_name))
         pattern = int(model_name[model_name.find('p')+1])
-        num_mask = len(utils.get_grids(*config.NETWORK.IMAGE_SIZE, pattern))
+        num_mask = len(utils.get_grids(*config.NETWORK.IMAGE_SIZE, pattern)[0])
         model = LResNet50E_IR_FPN(num_mask=num_mask)
         model.load_state_dict(state_dict, strict=True)
         model = model.cuda()

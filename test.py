@@ -68,7 +68,7 @@ def reset_config(config, args):
     if args.pattern:
         print('update pattern and num_mask')
         config.TRAIN.PATTERN = args.pattern
-        config.TRAIN.NUM_MASK = len(utils.get_grids(*config.NETWORK.IMAGE_SIZE, args.pattern))
+        config.TRAIN.NUM_MASK = len(utils.get_grids(*config.NETWORK.IMAGE_SIZE, args.pattern)[0])
     if args.batch_size:
         print('update batch_size')
         config.TRAIN.BATCH_SIZE = args.batch_size
@@ -121,7 +121,7 @@ def main():
     # ]
     for model_name in model_list:
         pattern = int(model_name[model_name.find('p')+1])
-        num_mask = len(utils.get_grids(*config.NETWORK.IMAGE_SIZE, pattern))
+        num_mask = len(utils.get_grids(*config.NETWORK.IMAGE_SIZE, pattern)[0])
         model = LResNet50E_IR_FPN(num_mask=num_mask)
         model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
 

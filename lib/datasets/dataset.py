@@ -29,7 +29,7 @@ class WebFace_Folder(Dataset):
 
         self.occList = utils.occlist_reader(Occluders_List)
         self.occRoot = Occluders
-        self.grids = utils.get_grids(*img_size, pattern)
+        self.grids, self.centers, self.counts = utils.get_grids(*img_size, pattern)
         self.img_size = img_size
 
         self.mode = mode
@@ -126,7 +126,7 @@ class WebFace_LMDB(Dataset):
         self.occList = utils.occlist_reader(Occluders_List)
         # self.occList = utils.occlist_reader_ignore(Occluders_List, idx=ignore_idx)
         self.occRoot = Occluders
-        self.grids = utils.get_grids(*img_size, pattern)
+        self.grids, self.centers, self.counts = utils.get_grids(*img_size, pattern)
         self.img_size = img_size
 
         self.mode = mode

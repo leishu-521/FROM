@@ -50,14 +50,14 @@ def parse_args():
     parser.add_argument('--soft_binary', help='whether use soft binary mask', type=int)
     parser.add_argument('--batch_size', help='batch size', type=int, default=8)
     parser.add_argument('--weight_pred', help='wegiht for pred loss', type=float, default=1)
-    parser.add_argument('--pattern', help='num of pattern', type=int, default=5)
+    parser.add_argument('--pattern', help='num of pattern', type=int, default=4)
     parser.add_argument('--lr', help='init learning rate', type=float, default=0.01)
     parser.add_argument('--optim', help='optimizer type', type=str, default='sgd')
     parser.add_argument('--pretrained', help='whether use pretrained model', type=str)
     parser.add_argument('--debug', help='whether debug', default=0, type=int)
     parser.add_argument('--model', help=' model name', type=str, default='LResNet50E_IR_FPN')
     parser.add_argument('--loss', help=' loss type', type=str)
-    parser.add_argument('--factor', help='factor of mask',  type=float)
+    parser.add_argument('--factor', help='factor of mask', type=float)
     parser.add_argument('--ratio', help='ratio of masked img for training', default=3, type=int)
     args = parser.parse_args()
 
@@ -77,7 +77,7 @@ def reset_config(config, args):
     if args.pattern:
         print('update pattern and num_mask')
         config.TRAIN.PATTERN = args.pattern
-        config.TRAIN.NUM_MASK = len(utils.get_grids(*config.NETWORK.IMAGE_SIZE, args.pattern))
+        config.TRAIN.NUM_MASK = len(utils.get_grids(*config.NETWORK.IMAGE_SIZE, args.pattern)[0])
     if args.batch_size:
         print('update batch_size')
         config.TRAIN.BATCH_SIZE = args.batch_size
@@ -85,10 +85,10 @@ def reset_config(config, args):
     if args.lr:
         print('update learning rate')
         config.TRAIN.LR = args.lr
-    if args.pretrained =='No':
+    if args.pretrained == 'No':
         print('update pretrained')
         config.NETWORK.PRETRAINED = ''
-    if args.factor: 
+    if args.factor:
         print('update factor')
         config.NETWORK.FACTOR = args.factor
     if args.optim:
@@ -105,7 +105,6 @@ def reset_config(config, args):
     if args.weight_pred is not None:
         print('update wegiht_pred')
         config.LOSS.WEIGHT_PRED = args.weight_pred
-
 
 
 def main():
@@ -136,11 +135,11 @@ def main():
 
     # --------------------------------loss function and optimizer-----------------------------
     optimizer_sgd = torch.optim.SGD([{'params': model.parameters()}, {'params': classifier.parameters()}],
-                                lr=config.TRAIN.LR,
-                                momentum=config.TRAIN.MOMENTUM,
-                                weight_decay=config.TRAIN.WD)
+                                    lr=config.TRAIN.LR,
+                                    momentum=config.TRAIN.MOMENTUM,
+                                    weight_decay=config.TRAIN.WD)
     optimizer_adam = torch.optim.Adam([{'params': model.parameters()}, {'params': classifier.parameters()}],
-                                lr=config.TRAIN.LR)
+                                      lr=config.TRAIN.LR)
     if config.TRAIN.OPTIMIZER == 'sgd':
         optimizer = optimizer_sgd
     elif config.TRAIN.OPTIMIZER == 'adam':
@@ -194,22 +193,22 @@ def main():
         transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))  # range [0.0, 1.0] -> [-1.0,1.0]
     ])
 
-    dataset = WebFace_LMDB(config.DATASET.LMDB_FILE, config.TRAIN.MODE, 
-                           config.NETWORK.IMAGE_SIZE, config.TRAIN.PATTERN, 
+    dataset = WebFace_LMDB(config.DATASET.LMDB_FILE, config.TRAIN.MODE,
+                           config.NETWORK.IMAGE_SIZE, config.TRAIN.PATTERN,
                            ratio=args.ratio, transform=train_transform)
 
     train_loader = torch.utils.data.DataLoader(
         dataset=dataset,
-        batch_size=config.TRAIN.BATCH_SIZE*len(gpus), 
+        batch_size=config.TRAIN.BATCH_SIZE * len(gpus),
         shuffle=config.TRAIN.SHUFFLE,
-        num_workers=config.TRAIN.WORKERS, 
+        num_workers=config.TRAIN.WORKERS,
         pin_memory=True)
 
     test_loader = torch.utils.data.DataLoader(
         LFW_Image(config, test_transform),
-        batch_size=config.TEST.BATCH_SIZE*len(gpus), 
+        batch_size=config.TEST.BATCH_SIZE * len(gpus),
         shuffle=config.TEST.SHUFFLE,
-        num_workers=config.TEST.WORKERS, 
+        num_workers=config.TEST.WORKERS,
         pin_memory=True)
 
     logger.info('length of train Database: ' + str(len(train_loader.dataset)) + '  Batches: ' + str(len(train_loader)))
@@ -220,8 +219,8 @@ def main():
     best_acc = 0.0
     best_model = False
     for epoch in range(start_epoch, config.TRAIN.END_EPOCH):
-
-        train(train_loader, model, classifier, criterion, optimizer, epoch, tb_log_dir, config)
+        # train函数添加了三个参数
+        train(train_loader, model, classifier, criterion, optimizer, epoch, tb_log_dir, config, dataset.centers, dataset.counts, config.TRAIN.PATTERN)
         acc, acc_occ, tar_occ = lfw_eval(model, None, config, test_loader, tb_log_dir, epoch)
 
         perf_acc = acc if config.TRAIN.MODE == 'Clean' else acc_occ
@@ -248,12 +247,15 @@ def main():
 
     # save best model with its acc
     time_str = time.strftime('%Y-%m-%d-%H-%M')
-    shutil.move(os.path.join(final_output_dir, 'model_best.pth.tar'), 
-                os.path.join(final_output_dir, 'model_best_{}_{:.4f}_{:.4f}_{:.4f}.pth.tar'.format(time_str, best_keep[0], best_keep[1], best_keep[2])))
+    shutil.move(os.path.join(final_output_dir, 'model_best.pth.tar'),
+                os.path.join(final_output_dir,
+                             'model_best_{}_{:.4f}_{:.4f}_{:.4f}.pth.tar'.format(time_str, best_keep[0], best_keep[1],
+                                                                                 best_keep[2])))
 
     end = time.time()
     time_used = (end - start) / 3600.0
     logger.info('Done Training, Consumed {:.2f} hours'.format(time_used))
+
 
 if __name__ == '__main__':
     main()

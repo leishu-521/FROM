@@ -131,7 +131,7 @@ def main():
     for models_params in get_models_params_new():
         model_name, state_dict = models_params
         pattern = int(model_name[model_name.find('p')+1])
-        num_mask = len(utils.get_grids(*config.NETWORK.IMAGE_SIZE, pattern))
+        num_mask = len(utils.get_grids(*config.NETWORK.IMAGE_SIZE, pattern)[0])
         model = LResNet50E_IR_FPN(num_mask=num_mask)
         model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
 

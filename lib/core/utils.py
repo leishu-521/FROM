@@ -394,11 +394,33 @@ def occluded_image_box(img, occ, box):
     ratio = ((end_y - start_y) * (end_x - start_x)) / float(H * W)
     return img, mask, ratio
 
+# def get_grids(H, W, N):
+#     grid_ori = np.zeros((H, W))
+#
+#     x_axis = np.linspace(0, W, N+1, True, dtype=int)
+#     y_axis = np.linspace(0, H, N+1, True, dtype=int)
+#
+#     vertex_set = []
+#     for y in y_axis:
+#         for x in x_axis:
+#             vertex_set.append((y, x))
+#
+#     grids = [grid_ori]
+#     for start in vertex_set:
+#         for end in vertex_set:
+#             if end[0] > start[0] and end[1] > start[1]:
+#                 grid = grid_ori.copy()
+#                 grid[start[0]:end[0], start[1]:end[1]] = 1.0
+#                 grids.append(grid)
+#     return grids
+
 def get_grids(H, W, N):
     grid_ori = np.zeros((H, W))
+    centers = []
+    counts = []
 
-    x_axis = np.linspace(0, W, N+1, True, dtype=int)
-    y_axis = np.linspace(0, H, N+1, True, dtype=int)
+    x_axis = np.linspace(0, W, N + 1, True, dtype=int)
+    y_axis = np.linspace(0, H, N + 1, True, dtype=int)
 
     vertex_set = []
     for y in y_axis:
@@ -406,13 +428,28 @@ def get_grids(H, W, N):
             vertex_set.append((y, x))
 
     grids = [grid_ori]
+    grid_ori_centers = (0, 0)
+    grid_ori_counts = 0
+    centers.append(grid_ori_centers)
+    counts.append(grid_ori_counts)
+
+    # i = 0
     for start in vertex_set:
         for end in vertex_set:
             if end[0] > start[0] and end[1] > start[1]:
                 grid = grid_ori.copy()
                 grid[start[0]:end[0], start[1]:end[1]] = 1.0
+                # if int(((end[0] - start[0]) / (H / N)) * ((end[1] - start[1]) / (W / N)) + 0.5) == 9:
+                #     print(grid)
+                # print("左上角坐标：({},{}),右下角坐标({},{})".format(start[1], start[0], end[1], end[0]))
+                # print('({},{})'.format(start[1] + (end[1] - start[1]) / 2, start[0] + (end[0] - start[0]) / 2))
+                # print("方块数量：{}".format(int(((end[0] - start[0]) / (H / N)) * ((end[1] - start[1]) / (W / N)) + 0.5)))
                 grids.append(grid)
-    return grids
+                centers.append((start[1] + (end[1] - start[1]) / 2, start[0] + (end[0] - start[0]) / 2))
+                counts.append(int(((end[0] - start[0]) / (H / N)) * ((end[1] - start[1]) / (W / N)) + 0.5)) # int会直接截断取整数，如果想要使用四舍五入，则在int里面的数加0.5即可
+                # i += 1
+    # print(i)
+    return grids, centers, counts
 
 def cal_IoU(mask1, mask2):
     inter = np.sum(mask1 * mask2)
@@ -449,3 +486,5 @@ if __name__ == '__main__':
     img_size = (112, 96)
     row = 4
     grids = get_grids(*img_size, row)
+
+    print(1)

@@ -356,10 +356,15 @@ class LResNet_Occ(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.prelu1(x)
+        print("x.shape:{}".format(x.shape))
         x1 = self.layer1(x)
+        print("x1.shape:{}".format(x1.shape))
         x2 = self.layer2(x1)
+        print("x2.shape:{}".format(x2.shape))
         x3 = self.layer3(x2)
+        print("x3.shape:{}".format(x3.shape))
         fmap = self.layer4(x3)
+        print("fmap.shape:{}".format(fmap.shape))
 
         # generate mask
         if not isinstance(mask, torch.Tensor):
@@ -387,3 +392,14 @@ def LResNet50E_IR_Occ(is_gray=False, num_mask=101):
     layers = [3, 4, 14, 3]
     model = LResNet_Occ(BlockIR, layers, filter_list, is_gray)
     return model
+
+
+if __name__=="__main__":
+    img = torch.randn([8, 3, 112, 96])
+    print("img.shape:{}".format(img.shape))
+    model = LResNet50E_IR_Occ(num_mask=226)
+    feature = model(img)
+    print("feature[0].shape:{}".format(feature[0].shape))
+    print("feature[1].shape:{}".format(feature[1].shape))
+    print("feature[2].shape:{}".format(feature[2].shape))
+    print("feature[3].shape:{}".format(feature[3].shape))
