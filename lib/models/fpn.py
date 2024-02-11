@@ -356,15 +356,15 @@ class LResNet_Occ(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.prelu1(x)
-        print("x.shape:{}".format(x.shape))
+        # print("x.shape:{}".format(x.shape))
         x1 = self.layer1(x)
-        print("x1.shape:{}".format(x1.shape))
+        # print("x1.shape:{}".format(x1.shape))
         x2 = self.layer2(x1)
-        print("x2.shape:{}".format(x2.shape))
+        # print("x2.shape:{}".format(x2.shape))
         x3 = self.layer3(x2)
-        print("x3.shape:{}".format(x3.shape))
+        # print("x3.shape:{}".format(x3.shape))
         fmap = self.layer4(x3)
-        print("fmap.shape:{}".format(fmap.shape))
+        # print("fmap.shape:{}".format(fmap.shape))
 
         # generate mask
         if not isinstance(mask, torch.Tensor):

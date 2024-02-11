@@ -243,6 +243,7 @@ def calculate_distance(point1, point2):
     x1, y1 = point1
     x2, y2 = point2
     distance = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+    # print("两点距离为：{}".format(distance))
     return distance
 
 def mask_Mse(centers, counts, vec, mask_label, N):
@@ -287,7 +288,7 @@ import time
 H, W, N = 112, 96, 5
 grids, centers, counts = get_grids(H, W, N)
 vec = random.sample(range(101),8)
-mask_label = random.sample(range(101), 8)
+mask_label = random.sample(range(226), 8)
 print("centers:{}".format(centers))
 print("counts:{}".format(counts))
 mask_Mse(centers, counts, vec, mask_label, 5)

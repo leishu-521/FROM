@@ -32,7 +32,7 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, tb_log_d
             loss = criterion(output, label)
 
         elif config.TRAIN.MODE == 'Mask':
-            output, loss, loss_cls, loss_pred, mask, preds = occ_train(features, label, mask_label, config, classifier,
+            output, loss, loss_cls, loss_pred, mask, preds, mse = occ_train(features, label, mask_label, config, classifier,
                                                                        criterion, centers, counts, pattern)
         else:
             raise ValueError('Unknown training mode!')
@@ -74,7 +74,7 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, tb_log_d
                     epoch, batch_idx, len(train_loader), 100. * batch_idx / len(train_loader),
                     iters, loss_display, acc, time_used, speed) + INFO)
             if config.TRAIN.MODE == 'Mask':
-                logger.info('Cls Loss: {:.4f}; Pred Loss: {:.4f}*{}'.format(loss_cls_dis, loss_pred_dis,
+                logger.info('Cls Loss: {:.4f}; Pred Loss: {:.4f}+{:.4f}*{}'.format(loss_cls_dis, loss_pred_dis, mse,
                                                                             config.LOSS.WEIGHT_PRED))
             with SummaryWriter(tb_log_dir) as sw:
                 sw.add_scalar('TRAIN_LOSS', loss_display, iters)
@@ -95,20 +95,21 @@ def occ_train(features, label, mask_label, config, classifier, criterion, center
     loss_cls = criterion(output, label)
 
     # 自己加的mse
-    vec_preds = np.argmax(vec, axis=1)
+    # vec_preds = np.argmax(vec, axis=1)
+    vec_preds = np.argmax(vec.cpu().detach().numpy(), axis=1)
     mse = mask_Mse(centers, counts, vec_preds, mask_label, pattern)
 
     loss_pred = criterion(vec, mask_label)
-    print(type(loss_pred))
+    # print(type(loss_pred))
     print(mask_label)
     preds = vec.cpu().detach().numpy()
-    print(preds)
+    # print(preds)
     preds = np.argmax(preds, axis=1)
-    print(preds)
+    # print(preds)
     loss = loss_cls + config.LOSS.WEIGHT_PRED * (loss_pred + mse)
 
 
-    return output, loss, loss_cls, loss_pred, mask, preds
+    return output, loss, loss_cls, loss_pred, mask, preds, mse
 
 
 def calculate_distance(point1, point2):
@@ -134,8 +135,11 @@ def mask_Mse(centers, counts, vec, mask_label, N):
     if len(mask_centers) != len(mask_centers_label) or len(mask_counts) != len(mask_counts_label):
         raise ValueError("Input lists must have the same length.")
     n = len(mask_counts)
-    for a, b in zip(mask_centers, mask_centers_label):
-        print(a, b)
+
+    # 调试使用，可删除
+    # for a, b in zip(mask_centers, mask_centers_label):
+    #     print(a, b)
+
     center_squared_diff_sum = sum(calculate_distance(a, b) for a, b in zip(mask_centers, mask_centers_label))
     print("center_squared_diff_sum:{}".format(center_squared_diff_sum))
     centers_mse = center_squared_diff_sum / n / 147  # 112*96 的图像两点距离最大为147
