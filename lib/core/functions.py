@@ -101,7 +101,7 @@ def occ_train(features, label, mask_label, config, classifier, criterion, center
 
     loss_pred = criterion(vec, mask_label)
     # print(type(loss_pred))
-    print(mask_label)
+    print("掩码真实标签：{}".format(mask_label))
     preds = vec.cpu().detach().numpy()
     # print(preds)
     preds = np.argmax(preds, axis=1)
@@ -121,16 +121,17 @@ def calculate_distance(point1, point2):
 
 def mask_Mse(centers, counts, vec, mask_label, N):
     grids_counts = (N * (N + 1) / 2) ** 2 + 1
-    print(grids_counts)
+    # print(grids_counts)
     mask_centers = [list(centers[i]) for i in vec]
     mask_centers_label = [list(centers[i]) for i in mask_label]
 
     mask_counts = [counts[i] for i in vec]
     mask_counts_label = [counts[i] for i in mask_label]
-    print("预测图片的掩码位置中心坐标:{}".format(mask_centers))
-    print("图片的真实标签掩码位置中心坐标:{}".format(mask_centers_label))
-    print("预测图片的掩码块数量:{}".format(mask_counts))
-    print("图片的真实块数量:{}".format(mask_counts_label))
+    print("掩码预测标签：{}".format(vec))
+    # print("预测图片的掩码位置中心坐标:{}".format(mask_centers))
+    # print("图片的真实标签掩码位置中心坐标:{}".format(mask_centers_label))
+    # print("预测图片的掩码块数量:{}".format(mask_counts))
+    # print("图片的真实块数量:{}".format(mask_counts_label))
 
     if len(mask_centers) != len(mask_centers_label) or len(mask_counts) != len(mask_counts_label):
         raise ValueError("Input lists must have the same length.")
@@ -141,13 +142,13 @@ def mask_Mse(centers, counts, vec, mask_label, N):
     #     print(a, b)
 
     center_squared_diff_sum = sum(calculate_distance(a, b) for a, b in zip(mask_centers, mask_centers_label))
-    print("center_squared_diff_sum:{}".format(center_squared_diff_sum))
+    # print("center_squared_diff_sum:{}".format(center_squared_diff_sum))
     centers_mse = center_squared_diff_sum / n / 147  # 112*96 的图像两点距离最大为147
-    print("centers_mse:{}".format(centers_mse))
+    # print("centers_mse:{}".format(centers_mse))
     counts_squared_diff_sum = sum(abs(a - b) for a, b in zip(mask_counts, mask_counts_label))
-    print("counts_squared_diff_sum:{}".format(counts_squared_diff_sum))
+    # print("counts_squared_diff_sum:{}".format(counts_squared_diff_sum))
     counts_mse = counts_squared_diff_sum / n / (N * N)
-    print("counts_mse:{}".format(counts_mse))
+    # print("counts_mse:{}".format(counts_mse))
 
     mse = centers_mse + counts_mse
     return mse
