@@ -156,12 +156,12 @@ def main():
     if config.NETWORK.PRETRAINED:
         # print(final_output_dir)
         model, classifier = utils.load_pretrained(model, classifier, final_output_dir,
-                                                  "model_p5_w1_9938_9470_6503_原来.pth.tar")
+                                                  "pretrained/model_p4_baseline_9938_8205_3610.pth.tar")
 
     if config.TRAIN.RESUME:
         start_epoch, model, optimizer, classifier = \
             utils.load_checkpoint(model, optimizer, classifier, final_output_dir,
-                                  "model_p5_w1_9938_9470_6503_原来.pth.tar")
+                                  "pretrained/model_p4_baseline_9938_8205_3610.pth.tar")
 
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, config.TRAIN.LR_STEP, config.TRAIN.LR_FACTOR)
@@ -256,7 +256,7 @@ def main():
         # shutil.move(os.path.join(final_output_dir, 'model_best.pth.tar'),
         #             os.path.join(final_output_dir, 'model_best_{}_{:.4f}_{:.4f}_{:.4f}.pth.tar'.format(time_str, best_keep[0], best_keep[1], best_keep[2])))
         # 40和50和60轮时分别保存一下
-        if epoch == 40 or epoch == 50 or epoch == 60:
+        if epoch == 39 or epoch == 49 or epoch == 59:
             # save best model with its acc
             time_str = time.strftime('%Y-%m-%d-%H-%M')
             shutil.copyfile(os.path.join(final_output_dir, 'model_best.pth.tar'),

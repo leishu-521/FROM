@@ -54,11 +54,16 @@ def get_models_params_new():
     #                 'model_best_p5_2023-12-28-16-35_0.9905_0.9405_0.5527_作者给的预训练权重_改动MD模块.pth.tar',
     #                 'model_best_p5_2023-12-22-15-20_0.9878_0.9312_0.6440_作者给的预训练权重_transformer模块.pth.tar',
     #                 'model_best_p5_2023-12-14-14-37_0.9915_0.9588_0.7163.pth.tar']
-    models_names = ['model_best_p5_40epoch_2024-01-08-20-59_0.9887_0.9278_0.4933.pth.tar',
+    # models_names = ['model_best_p5_40epoch_2024-01-08-20-59_0.9887_0.9278_0.4933.pth.tar',
+    #                 'model_best_p5_50epoch_2024-01-09-03-47_0.9887_0.9278_0.4933.pth.tar',
+    #                 'model_best_p5_2023-12-22-15-20_0.9878_0.9312_0.6440_作者给的预训练权重_transformer模块.pth.tar',
+    #                 'model_best_p5_2023-12-14-14-37_0.9915_0.9588_0.7163.pth.tar',
+    #                 'model_best_p5.pth.tar']
+    models_names = ['model_best_p5_39epoch_2024-01-12-18-23_0.9942_0.9575_0.7180_使用basep4权重_BN后面加分类.pth.tar',
+                    'model_best_p5_59epoch_2024-01-13-08-01_0.9942_0.9575_0.7180_使用basep4权重_BN后面加分类.pth.tar',
                     'model_best_p5_50epoch_2024-01-09-03-47_0.9887_0.9278_0.4933.pth.tar',
                     'model_best_p5_2023-12-22-15-20_0.9878_0.9312_0.6440_作者给的预训练权重_transformer模块.pth.tar',
-                    'model_best_p5_2023-12-14-14-37_0.9915_0.9588_0.7163.pth.tar',
-                    'model_best_p5.pth.tar']
+                    'model_best_p5_2023-12-14-14-37_0.9915_0.9588_0.7163.pth.tar', ]
     models_params = []
     for name in models_names:
         model_path = os.path.join(models_root, name)

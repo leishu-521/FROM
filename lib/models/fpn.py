@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class PyramidFeatures(nn.Module):
     def __init__(self, C3_size, C4_size, C5_size, feature_size=256):
         super(PyramidFeatures, self).__init__()
@@ -49,6 +50,7 @@ class PyramidFeatures(nn.Module):
 
         return [P3_x, P4_x, P5_x, P6_x, P7_x]
 
+
 class BlockIR(nn.Module):
     def __init__(self, inplanes, planes, stride, dim_match):
         super(BlockIR, self).__init__()
@@ -84,6 +86,7 @@ class BlockIR(nn.Module):
 
         return out
 
+
 class LResNet_Occ_FC(nn.Module):
 
     def __init__(self, block, layers, filter_list, is_gray=False):
@@ -108,7 +111,7 @@ class LResNet_Occ_FC(nn.Module):
             nn.Linear(64 * 7 * 6, 512),
             nn.BatchNorm1d(512),  # fix gamma ???
             nn.Sigmoid(),
-        ) 
+        )
         self.fpn = PyramidFeatures(filter_list[2], filter_list[3], filter_list[4])
 
         self.reduces = nn.Sequential(
@@ -142,9 +145,8 @@ class LResNet_Occ_FC(nn.Module):
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0.0)
             elif isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.BatchNorm1d):
-                nn.init.constant_(m.weight,1)
-                nn.init.constant_(m.bias,0)
-
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
     def _make_layer(self, block, inplanes, planes, blocks, stride):
         layers = []
@@ -176,7 +178,7 @@ class LResNet_Occ_FC(nn.Module):
 
         fc_mask = fc * mask
 
-        return fc_mask, mask, vec, fc 
+        return fc_mask, mask, vec, fc
 
     def save(self, file_path):
         with open(file_path, 'wb') as f:
@@ -187,7 +189,8 @@ def LResNet50E_IR_Occ_FC(is_gray=False, num_mask=101):
     filter_list = [64, 64, 128, 256, 512, num_mask]
     layers = [3, 4, 14, 3]
     model = LResNet_Occ_FC(BlockIR, layers, filter_list, is_gray)
-    return model 
+    return model
+
 
 class LResNet_Occ_2D(nn.Module):
 
@@ -217,13 +220,13 @@ class LResNet_Occ_2D(nn.Module):
             nn.BatchNorm2d(filter_list[4]),
             nn.Conv2d(filter_list[4], 1, kernel_size=3, stride=1, padding=1, bias=False),
             nn.Sigmoid(),
-        ) 
+        )
         self.fpn = PyramidFeatures(filter_list[2], filter_list[3], filter_list[4])
 
         self.regress = nn.Sequential(
-            nn.BatchNorm1d(filter_list[4]*7*6),
+            nn.BatchNorm1d(filter_list[4] * 7 * 6),
             nn.Dropout(p=0.5),  # No drop for triplet dic
-            nn.Linear(filter_list[4]*7*6, filter_list[5], bias=False),
+            nn.Linear(filter_list[4] * 7 * 6, filter_list[5], bias=False),
             nn.BatchNorm1d(filter_list[5]),
         )
         # --End--Triplet branch
@@ -241,9 +244,8 @@ class LResNet_Occ_2D(nn.Module):
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0.0)
             elif isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.BatchNorm1d):
-                nn.init.constant_(m.weight,1)
-                nn.init.constant_(m.bias,0)
-
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
     def _make_layer(self, block, inplanes, planes, blocks, stride):
         layers = []
@@ -252,8 +254,6 @@ class LResNet_Occ_2D(nn.Module):
             layers.append(block(planes, planes, stride=1, dim_match=True))
 
         return nn.Sequential(*layers)
-
-
 
     def forward(self, x, mask=None):
         x = self.conv1(x)
@@ -273,14 +273,13 @@ class LResNet_Occ_2D(nn.Module):
         # regress
         vec = self.regress(mask.reshape(mask.size(0), -1))
 
-
         fmap_mask = fmap * mask
 
         fc_mask = self.fc(fmap_mask.reshape(fmap_mask.size(0), -1))
 
         fc = self.fc(fmap.reshape(fmap.size(0), -1))
 
-        return fc_mask, mask, vec, fc 
+        return fc_mask, mask, vec, fc
 
     def save(self, file_path):
         with open(file_path, 'wb') as f:
@@ -291,7 +290,7 @@ def LResNet50E_IR_Occ_2D(is_gray=False, num_mask=101):
     filter_list = [64, 64, 128, 256, 512, num_mask]
     layers = [3, 4, 14, 3]
     model = LResNet_Occ_2D(BlockIR, layers, filter_list, is_gray)
-    return model 
+    return model
 
 class LResNet_Occ(nn.Module):
 
@@ -341,14 +340,14 @@ class LResNet_Occ(nn.Module):
         #     nn.Linear(filter_list[4]*7*6, filter_list[5], bias=False),
         #     nn.BatchNorm1d(filter_list[5]),
         # )
-        self.regress1 = nn.Sequential(
-            Regress(filter_list[4], filter_list[5]),
-            nn.BatchNorm1d(filter_list[4] * 7 * 6),
-            nn.Dropout(p=0.5),  # No drop for triplet dic
-            nn.Linear(filter_list[4]*7*6, filter_list[5], bias=False),
-            nn.BatchNorm1d(filter_list[5]),
-        )
-
+        # self.regress1 = nn.Sequential(
+        #     Regress(filter_list[4], filter_list[5]),
+        #     nn.BatchNorm1d(filter_list[4] * 7 * 6),
+        #     nn.Dropout(p=0.5),  # No drop for triplet dic
+        #     nn.Linear(filter_list[4] * 7 * 6, filter_list[5], bias=False),
+        #     nn.BatchNorm1d(filter_list[5]),
+        # )
+        self.regress2 = Regress(filter_list[4], filter_list[5])
 
         # --End--Triplet branch
         self.fc = nn.Sequential(
@@ -365,9 +364,8 @@ class LResNet_Occ(nn.Module):
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0.0)
             elif isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.BatchNorm1d):
-                nn.init.constant_(m.weight,1)
-                nn.init.constant_(m.bias,0)
-
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
     def _make_layer(self, block, inplanes, planes, blocks, stride):
         layers = []
@@ -397,7 +395,7 @@ class LResNet_Occ(nn.Module):
         # vec = self.regress(mask.reshape(mask.size(0), -1))
 
         # leishu regress1
-        vec = self.regress1(mask)
+        vec = self.regress2(mask)
 
         ## 下面是自定义的transformer注意力机制
         # flatten: [B, C, H, W] -> [B, C, HW]
@@ -412,7 +410,7 @@ class LResNet_Occ(nn.Module):
 
         fc = self.fc(fmap.reshape(fmap.size(0), -1))
 
-        return fc_mask, mask, vec, fc 
+        return fc_mask, mask, vec, fc
 
     def save(self, file_path):
         with open(file_path, 'wb') as f:
@@ -424,7 +422,6 @@ def LResNet50E_IR_Occ(is_gray=False, num_mask=101):
     layers = [3, 4, 14, 3]
     model = LResNet_Occ(BlockIR, layers, filter_list, is_gray)
     return model
-
 
 
 class CustomAttention(nn.Module):
@@ -470,32 +467,35 @@ class CustomAttention(nn.Module):
         return x
 
 
-class Regress(nn.Module):
-    def __init__(self, input_channels, num_mask):
-        super().__init__()
-        self.input_channels = input_channels
-        self.num_mask = num_mask
-        self.softmax_a = nn.Softmax(dim=1)
-        self.conv1x1 = nn.Conv2d(self.input_channels, 2, 1, 1, 0)
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc = nn.Linear(self.input_channels, self.num_mask)
+# class Regress(nn.Module):
+#     def __init__(self, input_channels, num_mask):
+#         super().__init__()
+#         self.input_channels = input_channels
+#         self.num_mask = num_mask
+#         self.BN = nn.BatchNorm2d(self.input_channels)
+#         self.softmax_a = nn.Softmax(dim=1)
+#         self.conv1x1 = nn.Conv2d(self.input_channels, 2, 1, 1, 0)
+#         self.avg_pool = nn.AdaptiveAvgPool2d(1)
+#         self.fc = nn.Linear(self.input_channels, self.num_mask)
+#
+#     def forward(self, x):
+#         out = self.BN(x)
+#         out = self.conv1x1(x)
+#         out = self.softmax_a(out)
+#         out, _ = torch.max(out, dim=1, keepdim=True)
+#         x1 = x * out.repeat(1, 512, 1, 1)
+#
+#         # 为了接上论文的后半部分，进行reshape处理
+#         x1 = x1.reshape(x1.size(0), -1)
+#         # # 全局平均池化
+#         # x1 = self.avg_pool(x1)
+#         # if x1.shape[0] != 1:
+#         #     x1 = x1.squeeze()
+#         # else:
+#         #     x1 = x1.squeeze(2).squeeze(2)
+#         # x1 = self.fc(x1)
+#         return x1
 
-    def forward(self, x):
-        out = self.conv1x1(x)
-        out = self.softmax_a(out)
-        out, _ = torch.max(out, dim=1, keepdim=True)
-        x1 = x * out.repeat(1, 512, 1, 1)
-
-        # 为了接上论文的后半部分，进行reshape处理
-        x1 = x1.reshape(x1.size(0), -1)
-        # # 全局平均池化
-        # x1 = self.avg_pool(x1)
-        # if x1.shape[0] != 1:
-        #     x1 = x1.squeeze()
-        # else:
-        #     x1 = x1.squeeze(2).squeeze(2)
-        # x1 = self.fc(x1)
-        return x1
 
 class MaskDecoder(nn.Module):
     def __init__(self, input_channels, out_channels):
@@ -505,7 +505,6 @@ class MaskDecoder(nn.Module):
         self.softmax_a = nn.Softmax(dim=1)
         self.conv1x1 = nn.Conv2d(self.input_channels, out_channels, 1, 1, 0)
 
-
     def forward(self, x):
         out = self.conv1x1(x)
         out = self.softmax_a(out)
@@ -513,11 +512,61 @@ class MaskDecoder(nn.Module):
         x1 = x * out.repeat(1, self.input_channels, 1, 1)
         return x1
 
+
+class Regress(nn.Module):
+    def __init__(self, input_channels, num_mask):
+        super().__init__()
+        self.input_channels = input_channels
+        self.num_mask = num_mask
+        self.BN = nn.BatchNorm2d(self.input_channels)
+        # self.softmax_a = nn.Softmax(dim=1)
+        # self.conv1x1 = nn.Conv2d(self.input_channels, 2, 1, 1, 0)
+        # self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        # self.fc = nn.Linear(self.input_channels, self.num_mask)
+        self.conv1x1 = nn.Conv2d(self.input_channels, 25, 1, 1, 0)
+        self.softmax_a = nn.Softmax(dim=1)
+        self.relu = nn.ReLU(inplace=True)
+        self.avgpool = nn.AdaptiveAvgPool2d((1,1))
+        self.fc = nn.Linear(12800, self.num_mask)
+
+
+    def forward(self, x):
+        # out = self.BN(x)
+        out = self.conv1x1(x)
+        out = self.softmax_a(out)
+        y = []
+        for i in range(25):
+            p_i = out[:, i, :, :]
+            p_i = torch.unsqueeze(p_i, 1)
+            y_i = torch.mul(x, p_i)
+            y_i = self.BN(y_i)
+            y_i = self.relu(y_i)
+            y_i = self.avgpool(y_i)
+            y_i = torch.squeeze(y_i)
+            # print(y_i.shape)
+            y.append(y_i)
+
+        m = torch.cat(y, 1)
+        # print("m:{}".format(m.shape))
+        m = self.fc(m)
+        return m
+
+
+
+
+
+
 if __name__ == "__main__":
     model = LResNet50E_IR_Occ()
     a = torch.randn([8, 3, 112, 96])
     b = model(a)
     print(b[2].shape)
+
+    # regress = Regress(512, 101)
+    # a = torch.randn([8, 512, 7, 6])
+    # b = regress(a)
+    # print(b.shape)
+
 
     # regress1 = nn.Sequential(
     #     Regress(512, 226),

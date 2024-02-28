@@ -7,7 +7,7 @@
 #                    --debug 1
 
 # ar face dataset testing
-python -u lib/core/ar_dataset.py --protocol 2
+python -u lib/core/ar_dataset.py --protocol 1
 
 # generate npy files for megaface testing
 #path='data/datasets/megaface/facescrub_images_factor1.0'
